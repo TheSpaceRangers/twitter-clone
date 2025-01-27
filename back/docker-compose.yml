@@ -1,0 +1,49 @@
+services:
+  auth-service:
+    build:
+      context: ./
+      dockerfile: ./services/auth-service/Dockerfile
+    ports:
+      - "3001:3001"
+    networks:
+      - app-network
+    depends_on:
+      - db-service
+
+  cache-service:
+    build:
+      context: ./
+      dockerfile: ./services/cache-service/Dockerfile
+    ports:
+      - "3003:3003"
+    env_file: ./services/cache-service/.env
+    networks:
+      - app-network
+    depends_on:
+      - db-service
+
+  post-service:
+    build:
+      context: ./
+      dockerfile: ./services/post-service/Dockerfile
+    ports:
+      - "3002:3002"
+    env_file: ./services/post-service/.env
+    networks:
+      - app-network
+    depends_on:
+      - db-service
+
+  db-service:
+    build:
+      context: ./
+      dockerfile: ./services/db-service/Dockerfile
+    ports:
+      - "3004:3004"
+    env_file: ./services/db-service/.env
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
