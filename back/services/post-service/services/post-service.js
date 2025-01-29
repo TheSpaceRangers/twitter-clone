@@ -1,12 +1,32 @@
 const axios = require('axios');
 
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://auth-service:3001';
 const DB_SERVICE_URL = process.env.DB_SERVICE_URL || 'http://db-service:3004';
 const CACHE_SERVICE_URL = process.env.CACHE_SERVICE_URL || 'http://cache-service:3003';
 
+async function verifyToken(token) {
+    if (!token)
+        throw new Error('No token provided');
+
+    try {
+        const response = await axios.post(`${AUTH_SERVICE_URL}/auth/verify-token`, { token: token.substring(7) });
+        console.log(response.data);
+        return response.data;
+    } catch (error) {
+        throw new Error("Invalid token. Please try again.");
+    }
+}
+
 exports.createPost = async (
+    token,
     id_user,
     message
 ) => {
+    const decoded = await verifyToken(token);
+    if (decoded.userId !== id_user) {
+        throw new Error('Unauthorized for this user');
+
+    }
     try {
         return (await axios.post(`${DB_SERVICE_URL}/db/posts`, {id_user, message})).data;
     } catch (error) {
@@ -15,7 +35,11 @@ exports.createPost = async (
     }
 };
 
-exports.getPosts = async () => {
+exports.getPosts = async (
+    token,
+) => {
+    await verifyToken(token);
+
     try {
         const cachedResponse = await axios.get(`${CACHE_SERVICE_URL}/cache/posts`);
         if (cachedResponse.data)

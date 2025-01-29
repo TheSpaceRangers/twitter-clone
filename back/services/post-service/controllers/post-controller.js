@@ -7,7 +7,7 @@ exports.createPost = async (req, res) => {
         return res.status(400).json({ error: 'id_user and message are required' });
 
     try {
-        res.status(201).json(await postService.createPost(id_user, message));
+        res.status(201).json(await postService.createPost(req.headers.authorization, id_user, message));
     } catch (error) {
         console.error('Error creating post:', error.message);
         res.status(500).json({ error: 'Failed to create post' });
@@ -16,7 +16,7 @@ exports.createPost = async (req, res) => {
 
 exports.getPosts = async (req, res) => {
     try {
-        res.status(200).json(await postService.getPosts());
+        res.status(200).json(await postService.getPosts(req.headers.authorization));
     } catch (error) {
         console.error('Error fetching posts:', error.message);
         res.status(500).json({ error: 'Failed to fetch posts' });
